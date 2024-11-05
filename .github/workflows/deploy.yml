@@ -12,16 +12,28 @@ jobs:
     environment: testing
     runs-on: ubuntu-latest
     # https://docs.github.com/en/actions/writing-workflows/choosing-where-your-workflow-runs/running-jobs-in-a-container
+    # This runs the entire job in a container on the runner
     container:
       image: node:16    
       env:
         CONTAINER_ENV_VAR: 'Hello'
     env:
-      MONGODB_CONNECTION_PROTOCOL: mongodb+srv
-      MONGODB_CLUSTER_ADDRESS: cluster0.cjq7t.mongodb.net
+      # mongodb connection protocol for the MongoDB service container
+      MONGODB_CONNECTION_PROTOCOL: mongodb
+      # address/name of the MongoDB service container on the container network - this only works if the job/tests connecting are also containerized
+      MONGODB_CLUSTER_ADDRESS: mongodb 
       MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
       MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
       PORT: 8080
+    # This runs a service in a container on the runner
+    services:
+      mongodb:
+        image: mongo
+        env:
+          # config for containerized MongoDB
+          MONGO_INITDB_DATABASE: ${{ env.MONGODB_DB_NAME }}
+          MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+          MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
     steps:
       - name: Get Code
         uses: actions/checkout@v3
